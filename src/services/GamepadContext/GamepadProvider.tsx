@@ -33,7 +33,19 @@ const GamepadProvider = ({ enabled, onGuide, children }: GamepadProviderProps) =
     const lastButtonPressedTime = useRef<number>(0);
     const axisTimer = useRef<number>(0);
     const axisTimerRight = useRef<number>(0);
-    const eventHandlers = useRef<GamepadEventHandlers>(new Map());
+    // Saga: B means "back" wherever a screen hasn't claimed it (e.g. the main tabs and Search): it leaves a
+    // text field first, then goes back a screen. Seeded here, before any screen registers, because the
+    // most recently registered handler for an event wins; screens with their own B action still override it.
+    const eventHandlers = useRef<GamepadEventHandlers>(new Map([
+        ['buttonB', new Map([['saga-default-back', () => {
+            const active = document.activeElement as HTMLElement | null;
+            if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
+                active.blur();
+            } else if (window.location.hash !== '#/' && window.location.hash !== '') {
+                window.history.back();
+            }
+        }]])],
+    ]));
     const lockPrefix = useRef<string | null>(null);
     const [controllerType, setControllerType] = useState<ControllerType>('generic');
 
