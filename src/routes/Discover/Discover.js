@@ -241,6 +241,7 @@ const Discover = () => {
                     <MetaItem
                         key={index}
                         className={classnames({ 'selected': selectedMetaItemIndex === index })}
+                        id={metaItem.id}
                         type={metaItem.type}
                         name={metaItem.name}
                         poster={metaItem.poster}

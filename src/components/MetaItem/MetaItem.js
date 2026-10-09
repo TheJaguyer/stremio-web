@@ -8,20 +8,34 @@ const { useHover } = require('react-aria/useHover');
 const filterInvalidDOMProps = require('filter-invalid-dom-props').default;
 const { useNavigateWithOrigin } = require('stremio-router');
 const { default: Icon } = require('@stremio/stremio-icons/react');
-const { default: ActionMenu } = require('stremio/components/ActionMenu');
 const { default: Button } = require('stremio/components/Button');
 const { default: Image } = require('stremio/components/Image');
-const Multiselect = require('stremio/components/Multiselect');
+const { useCore } = require('stremio/core');
+const { isInLibrary, addToLibrary, removeFromLibrary } = require('stremio/saga/library');
+const { default: ItemMenu } = require('./ItemMenu');
 const useBinaryState = require('stremio/common/useBinaryState');
 const { default: getMetaDetailsHref } = require('stremio/common/getMetaDetailsHref');
 const { ICON_FOR_TYPE } = require('stremio/common/CONSTANTS');
 const styles = require('./styles');
 
+// Saga: the poster after/before this one, to keep focus nearby when this one disappears (e.g. removed
+// from Continue Watching).
+const neighbourOf = (container) => {
+    const sibling = container?.nextElementSibling ?? container?.previousElementSibling;
+    return sibling?.querySelector('[tabindex]') ?? null;
+};
+
+// Saga: actionMenu / onDismissClick are taken out of props (not passed to the DOM) but unused: no mouse buttons.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const MetaItem = React.memo(({ className, type, name, poster, posterShape, posterChangeCursor, progress, newVideos, options, actionMenu, deepLinks, href: customHref, dataset, optionOnSelect, onDismissClick, onPlayClick, watched, live, ...props }) => {
     const { t } = useTranslation();
     const artwork = poster && typeof poster === 'object' ? poster : { src: poster, shape: posterShape, changeCursor: posterChangeCursor };
     const { navigateWithOrigin } = useNavigateWithOrigin();
+    const core = useCore();
     const [menuOpen, onMenuOpen, onMenuClose] = useBinaryState(false);
+    const [menuOptions, setMenuOptions] = React.useState([]);
+    const containerRef = React.useRef(null);
+    const linkRef = React.useRef(null);
     const { hoverProps, isHovered } = useHover({});
     const href = React.useMemo(() => {
         return typeof customHref === 'string' ? customHref : getMetaDetailsHref(deepLinks);
@@ -45,50 +59,87 @@ const MetaItem = React.memo(({ className, type, name, poster, posterShape, poste
             navigateWithOrigin(href);
         }
     }, [href, navigateWithOrigin, props.onClick]);
-    const dismissOnClick = React.useCallback((event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        onDismissClick(event);
-    }, [onDismissClick]);
     const playOnClick = React.useCallback((event) => {
         event.preventDefault();
         event.stopPropagation();
         onPlayClick(event);
     }, [onPlayClick]);
-    const menuOnSelect = React.useCallback((event) => {
+    // Saga: `options` may be a function, evaluated when the menu opens (LibItem). Catalog posters (anything
+    // with a meta id and no options of its own) get "Add to / Remove from library".
+    const catalogId = typeof props.id === 'string' && typeof type === 'string' ? props.id : null;
+    const hasOptions = typeof options === 'function' || (Array.isArray(options) && options.length > 0) || catalogId !== null;
+    const resolveOptions = React.useCallback(() => {
+        if (typeof options === 'function') return options();
+        if (Array.isArray(options) && options.length > 0) return options;
+        if (catalogId === null) return [];
+        return isInLibrary(catalogId) ?
+            [{ label: t('REMOVE_FROM_LIB'), value: 'saga-remove-from-library' }]
+            :
+            [{ label: t('ADD_TO_LIB'), value: 'saga-add-to-library' }];
+    }, [options, catalogId, t]);
+    // Saga: no mouse-only buttons on posters (the X on Continue Watching, the ⋮ menu); gamepad Y (sent here
+    // as a 'saga-item-menu' event on the focused poster) opens the options as a focused menu instead.
+    React.useEffect(() => {
+        const container = containerRef.current;
+        if (!container || !hasOptions) return;
+        const onItemMenu = (event) => {
+            event.stopPropagation();
+            const resolved = resolveOptions();
+            if (resolved.length === 0) return;
+            setMenuOptions(resolved);
+            onMenuOpen();
+        };
+        container.addEventListener('saga-item-menu', onItemMenu);
+        return () => container.removeEventListener('saga-item-menu', onItemMenu);
+    }, [hasOptions, resolveOptions, onMenuOpen]);
+    const menuOnCancel = React.useCallback(() => {
+        onMenuClose();
+        linkRef.current?.focus();
+    }, [onMenuClose]);
+    const menuOnSelect = React.useCallback((value, reactEvent) => {
+        const container = containerRef.current;
+        const neighbour = neighbourOf(container);
+        onMenuClose();
+        linkRef.current?.focus();
+        if (value === 'saga-add-to-library') {
+            addToLibrary(core, { id: catalogId, type, name, poster: artwork.src, posterShape: artwork.shape });
+            return;
+        }
+        if (value === 'saga-remove-from-library') {
+            removeFromLibrary(core, catalogId);
+            return;
+        }
         if (typeof optionOnSelect === 'function') {
             optionOnSelect({
                 type: 'select-option',
-                value: event.value,
+                value,
                 dataset: dataset,
-                reactEvent: event.reactEvent,
-                nativeEvent: event.nativeEvent
+                reactEvent,
+                nativeEvent: reactEvent.nativeEvent
             });
         }
-    }, [dataset, optionOnSelect]);
+        // If the poster goes away (removed / dismissed), move focus to the one beside it.
+        const deadline = Date.now() + 2000;
+        const followUp = () => {
+            if (container && !container.isConnected) {
+                const active = document.activeElement;
+                if ((!active || active === document.body) && neighbour?.isConnected) neighbour.focus();
+            } else if (Date.now() < deadline) {
+                setTimeout(followUp, 100);
+            }
+        };
+        setTimeout(followUp, 100);
+    }, [dataset, optionOnSelect, onMenuClose, core, catalogId, type, name, artwork.src, artwork.shape]);
     const renderPosterFallback = React.useCallback(() => (
         <Icon
             className={styles['placeholder-icon']}
             name={ICON_FOR_TYPE.has(type) ? ICON_FOR_TYPE.get(type) : ICON_FOR_TYPE.get('other')}
         />
     ), [type]);
-    const renderMenuLabelContent = React.useCallback(() => (
-        <Icon className={styles['icon']} name={'more-vertical'} />
-    ), []);
-    const hasOptions = Array.isArray(options) && options.length > 0;
     return (
-        <div {...hoverProps} className={classnames(className, styles['meta-item-container'], styles['poster-shape-poster'], styles[`poster-shape-${artwork.shape}`], { 'active': menuOpen, 'hovered': isHovered })}>
-            <Button title={name} href={href} {...filterInvalidDOMProps(props)} className={styles['meta-item-link']} onClick={metaItemOnClick}>
+        <div ref={containerRef} {...hoverProps} className={classnames(className, styles['meta-item-container'], styles['poster-shape-poster'], styles[`poster-shape-${artwork.shape}`], { 'active': menuOpen, 'hovered': isHovered })}>
+            <Button ref={linkRef} title={name} href={href} {...filterInvalidDOMProps(props)} className={styles['meta-item-link']} onClick={metaItemOnClick}>
                 <div className={classnames(styles['poster-container'], { 'poster-change-cursor': artwork.changeCursor })}>
-                    {
-                        onDismissClick ?
-                            <div title={t('LIBRARY_RESUME_DISMISS')} className={styles['dismiss-icon-layer']} onClick={dismissOnClick}>
-                                <Icon className={styles['dismiss-icon']} name={'close'} />
-                                <div className={styles['dismiss-icon-backdrop']} />
-                            </div>
-                            :
-                            null
-                    }
                     {
                         watched ?
                             <div className={styles['watched-icon-layer']}>
@@ -150,8 +201,8 @@ const MetaItem = React.memo(({ className, type, name, poster, posterShape, poste
                     }
                 </div>
                 {
-                    (typeof name === 'string' && name.length > 0) || hasOptions ?
-                        <div className={classnames(styles['title-bar-container'], { [styles['has-menu']]: hasOptions })}>
+                    typeof name === 'string' && name.length > 0 ?
+                        <div className={styles['title-bar-container']}>
                             <div className={styles['title-label']}>
                                 {typeof name === 'string' && name.length > 0 ? name : ''}
                             </div>
@@ -161,29 +212,8 @@ const MetaItem = React.memo(({ className, type, name, poster, posterShape, poste
                 }
             </Button>
             {
-                hasOptions ?
-                    actionMenu ?
-                        <ActionMenu
-                            className={styles['menu-label-container']}
-                            title={name}
-                            options={options}
-                            onOpen={onMenuOpen}
-                            onClose={onMenuClose}
-                            onSelect={menuOnSelect}
-                            tabIndex={-1}
-                        >
-                            <Icon className={styles['icon']} name={'more-vertical'} />
-                        </ActionMenu>
-                        :
-                        <Multiselect
-                            className={styles['menu-label-container']}
-                            renderLabelContent={renderMenuLabelContent}
-                            options={options}
-                            onOpen={onMenuOpen}
-                            onClose={onMenuClose}
-                            onSelect={menuOnSelect}
-                            tabIndex={-1}
-                        />
+                menuOpen && menuOptions.length > 0 ?
+                    <ItemMenu title={name} options={menuOptions} onSelect={menuOnSelect} onCancel={menuOnCancel} />
                     :
                     null
             }
@@ -194,6 +224,7 @@ const MetaItem = React.memo(({ className, type, name, poster, posterShape, poste
 MetaItem.displayName = 'MetaItem';
 
 MetaItem.propTypes = {
+    id: PropTypes.string,
     className: PropTypes.string,
     type: PropTypes.string,
     name: PropTypes.string,
@@ -210,7 +241,7 @@ MetaItem.propTypes = {
     posterChangeCursor: PropTypes.bool,
     progress: PropTypes.number,
     newVideos: PropTypes.number,
-    options: PropTypes.array,
+    options: PropTypes.oneOfType([PropTypes.array, PropTypes.func]),
     actionMenu: PropTypes.bool,
     href: PropTypes.string,
     deepLinks: PropTypes.shape({

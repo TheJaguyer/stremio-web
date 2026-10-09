@@ -46,6 +46,11 @@ const dpadDirection = (gamepad: Gamepad): Direction | null => {
     return null;
 };
 
+// Saga: ask the focused poster (if any) to open its options menu.
+const openItemMenu = () => {
+    document.activeElement?.dispatchEvent(new CustomEvent('saga-item-menu', { bubbles: true }));
+};
+
 const GamepadProvider = ({ enabled, onGuide, children }: GamepadProviderProps) => {
     const { t } = useTranslation();
     const toast = useToast();
@@ -67,6 +72,8 @@ const GamepadProvider = ({ enabled, onGuide, children }: GamepadProviderProps) =
                 window.history.back();
             }
         }]])],
+        // Saga: Y opens the focused poster's options menu (MetaItem listens for this event).
+        ['buttonY', new Map([['saga-item-menu', openItemMenu]])],
     ]));
     const lockPrefix = useRef<string | null>(null);
     const [controllerType, setControllerType] = useState<ControllerType>('generic');
@@ -358,6 +365,9 @@ const GamepadProvider = ({ enabled, onGuide, children }: GamepadProviderProps) =
             } else if (event.key === 'Enter' && !typing) {
                 consume(event);
                 emit('buttonA');
+            } else if (event.key === 'ContextMenu' && !typing) {
+                consume(event);
+                emit('buttonY');
             } else if (event.key === 'Escape') {
                 if (typing) {
                     consume(event);
