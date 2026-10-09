@@ -38,9 +38,8 @@
                 pointer-events: auto;
             }
 
-            .poster-image-layer {
-                transform: scale(1.05);
-            }
+            // Saga: no hover zoom. Un-zooming tears down the image's GPU layer, which flashes black on the
+            // Pi when a hovered poster starts scrolling; the outline above marks hover/focus instead.
 
             .play-icon-layer {
                 .play-icon-outer {
@@ -273,9 +272,6 @@
                 transition: all 0.1s ease-in;
             }
 
-            &:hover {
-                transform: scale(1.1);
-            }
         }
 
         .progress-bar-layer {
