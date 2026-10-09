@@ -22,14 +22,16 @@ type Props = {
 
 const MainNavBars = memo(({ className, route, query, children }: Props) => {
     const navRef = React.useRef(null);
-    const contentRef = React.useRef(null);
+    // Saga: spatial navigation covers the whole screen (search bar, side tabs and content), so a remote or
+    // D-pad can move from the content up to the search bar and left to the tabs.
+    const screenRef = React.useRef(null);
 
     const navRoute = route === 'continue_watching' ? 'library' : (route ?? '');
-    useContentGamepadNavigation(contentRef, navRoute);
+    useContentGamepadNavigation(screenRef, navRoute);
     useVerticalNavGamepadNavigation(navRef, navRoute);
 
     return (
-        <div className={classnames(className, styles['main-nav-bars-container'])}>
+        <div ref={screenRef} className={classnames(className, styles['main-nav-bars-container'])}>
             <HorizontalNavBar
                 className={styles['horizontal-nav-bar']}
                 route={route}
@@ -43,7 +45,7 @@ const MainNavBars = memo(({ className, route, query, children }: Props) => {
                 selected={route}
                 tabs={TABS}
             />
-            <div ref={contentRef} className={styles['nav-content-container']}>{children}</div>
+            <div className={styles['nav-content-container']}>{children}</div>
         </div>
     );
 });

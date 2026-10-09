@@ -99,7 +99,8 @@ const SearchBar = React.memo(({ className, query, active }) => {
     }, [routeFocused, active]);
 
     return (
-        <div className={classnames(className, styles['search-bar-container'], { 'active': active })} onClick={searchBarOnClick} ref={containerRef}>
+        // Saga: focusable (tabIndex -1) so remote/gamepad navigation can reach it; OK then opens Search.
+        <div className={classnames(className, styles['search-bar-container'], { 'active': active })} tabIndex={-1} onClick={searchBarOnClick} ref={containerRef}>
             {
                 active ?
                     <TextInput

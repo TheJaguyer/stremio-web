@@ -12,6 +12,12 @@
     position: relative;
     overflow: visible;
 
+    // Saga: visible focus for remote/gamepad navigation (same ring as focused posters).
+    &:focus {
+        outline: none;
+        box-shadow: 0 0 0 0.2rem var(--primary-foreground-color);
+    }
+
     .search-input {
         flex: 1;
         align-self: stretch;
