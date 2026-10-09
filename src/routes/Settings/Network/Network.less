@@ -1,0 +1,30 @@
+.wifi {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    width: 100%;
+    min-width: 0;
+
+    .ssid {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--primary-foreground-color);
+    }
+
+    .button {
+        flex: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--border-radius);
+        background-color: var(--overlay-color);
+        color: var(--primary-foreground-color);
+
+        &:hover, &:focus {
+            background-color: var(--primary-accent-color);
+            color: var(--secondary-foreground-color);
+            outline: none;
+        }
+    }
+}

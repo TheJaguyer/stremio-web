@@ -1,9 +1,9 @@
+// Saga's Settings sections (Stremio's General, Streaming and Shortcuts sections are not shown on the box).
 const SECTIONS = {
-    GENERAL: 'general',
-    PLAYER: 'player',
-    INTERFACE: 'interface',
-    STREAMING: 'streaming',
-    SHORTCUTS: 'shortcuts',
+    APPEARANCE: 'appearance',
+    PLAYBACK: 'playback',
+    NETWORK: 'network',
+    ABOUT: 'about',
 };
 
 export {

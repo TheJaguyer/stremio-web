@@ -1,0 +1,38 @@
+.themes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+
+    .theme {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        border-radius: var(--border-radius);
+        border: 2px solid transparent;
+        cursor: pointer;
+
+        .swatch {
+            width: 4.5rem;
+            height: 4.5rem;
+            border-radius: 50%;
+            box-shadow: 0 0 0 2px var(--overlay-color);
+        }
+
+        .name {
+            font-size: 0.9rem;
+            color: var(--primary-foreground-color);
+        }
+
+        &.selected {
+            border-color: var(--primary-accent-color);
+        }
+
+        &:hover, &:focus {
+            background-color: var(--overlay-color);
+            outline: none;
+            box-shadow: var(--outer-glow);
+        }
+    }
+}

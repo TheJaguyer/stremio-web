@@ -224,7 +224,8 @@ module.exports = (env, argv) => ({
             SERVICE_WORKER_DISABLED: false,
             DEBUG: argv.mode !== 'production',
             VERSION: packageJson.version,
-            COMMIT_HASH
+            COMMIT_HASH,
+            BRAND: JSON.stringify(brand),
         }),
         new webpack.ProvidePlugin({
             Buffer: ['buffer', 'Buffer']

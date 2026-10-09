@@ -3,40 +3,35 @@
 import React, { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import classnames from 'classnames';
 import throttle from 'lodash.throttle';
-import { usePlatform, useProfile, useStreamingServer, useRouteFocused, withCoreSuspender } from 'stremio/common';
+import { useProfile, useRouteFocused, withCoreSuspender } from 'stremio/common';
 import { MainNavBars } from 'stremio/components';
 import { SECTIONS } from './constants';
 import Menu from './Menu';
-import General from './General';
-import Interface from './Interface';
-import Player from './Player';
-import Streaming from './Streaming';
-import Shortcuts from './Shortcuts';
-import Info from './Info';
+import Appearance from './Appearance';
+import Playback from './Playback';
+import Network from './Network';
+import About from './About';
 import styles from './Settings.less';
 
+// Saga: four sections for a TV box (Stremio's account, streaming-server and shortcut settings removed).
 const Settings = () => {
     const routeFocused = useRouteFocused();
     const profile = useProfile();
-    const platform = usePlatform();
-    const streamingServer = useStreamingServer();
 
     const sectionsContainerRef = useRef<HTMLDivElement>(null);
-    const generalSectionRef = useRef<HTMLDivElement>(null);
-    const interfaceSectionRef = useRef<HTMLDivElement>(null);
-    const playerSectionRef = useRef<HTMLDivElement>(null);
-    const streamingServerSectionRef = useRef<HTMLDivElement>(null);
-    const shortcutsSectionRef = useRef<HTMLDivElement>(null);
+    const appearanceSectionRef = useRef<HTMLDivElement>(null);
+    const playbackSectionRef = useRef<HTMLDivElement>(null);
+    const networkSectionRef = useRef<HTMLDivElement>(null);
+    const aboutSectionRef = useRef<HTMLDivElement>(null);
 
     const sections = useMemo(() => ([
-        { ref: generalSectionRef, id: SECTIONS.GENERAL },
-        { ref: interfaceSectionRef, id: SECTIONS.INTERFACE },
-        { ref: playerSectionRef, id: SECTIONS.PLAYER },
-        { ref: streamingServerSectionRef, id: SECTIONS.STREAMING },
-        { ref: shortcutsSectionRef, id: SECTIONS.SHORTCUTS },
+        { ref: appearanceSectionRef, id: SECTIONS.APPEARANCE },
+        { ref: playbackSectionRef, id: SECTIONS.PLAYBACK },
+        { ref: networkSectionRef, id: SECTIONS.NETWORK },
+        { ref: aboutSectionRef, id: SECTIONS.ABOUT },
     ]), []);
 
-    const [selectedSectionId, setSelectedSectionId] = useState(SECTIONS.GENERAL);
+    const [selectedSectionId, setSelectedSectionId] = useState(SECTIONS.APPEARANCE);
 
     const updateSelectedSectionId = useCallback(() => {
         const container = sectionsContainerRef.current;
@@ -89,32 +84,14 @@ const Settings = () => {
             <div className={classnames(styles['settings-content'], 'animation-fade-in')}>
                 <Menu
                     selected={selectedSectionId}
-                    streamingServer={streamingServer}
                     onSelect={onMenuSelect}
                 />
 
                 <div ref={sectionsContainerRef} className={styles['sections-container']} onScroll={onContainerScroll}>
-                    <General
-                        ref={generalSectionRef}
-                        profile={profile}
-                    />
-                    <Interface
-                        ref={interfaceSectionRef}
-                        profile={profile}
-                    />
-                    <Player
-                        ref={playerSectionRef}
-                        profile={profile}
-                    />
-                    <Streaming
-                        ref={streamingServerSectionRef}
-                        profile={profile}
-                        streamingServer={streamingServer}
-                    />
-                    {
-                        !platform.isMobile && <Shortcuts ref={shortcutsSectionRef} />
-                    }
-                    <Info streamingServer={streamingServer} />
+                    <Appearance ref={appearanceSectionRef} profile={profile} />
+                    <Playback ref={playbackSectionRef} profile={profile} />
+                    <Network ref={networkSectionRef} />
+                    <About ref={aboutSectionRef} />
                 </div>
             </div>
         </MainNavBars>

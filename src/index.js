@@ -33,6 +33,7 @@ const brand = require('../brand.json');
     } catch (_) { /* storage unavailable: keep the default */ }
     document.documentElement.dataset.theme = theme;
     const link = document.createElement('link');
+    link.id = 'saga-theme'; // Settings > Appearance swaps this href to change theme live
     link.rel = 'stylesheet';
     link.href = `/weebio/themes/${encodeURIComponent(theme)}.css`;
     document.head.appendChild(link);
@@ -47,6 +48,22 @@ const rebrand = (strings) => Object.fromEntries(Object.entries(strings).map(([ke
 const translations = Object.fromEntries(Object.entries(stremioTranslations()).map(([key, value]) => [key, {
     translation: rebrand(value)
 }]));
+
+// Labels for Saga's own Settings sections. English only; other languages fall back to these.
+translations['en-US'].translation = {
+    ...translations['en-US'].translation,
+    SAGA_APPEARANCE: 'Appearance',
+    SAGA_THEME: 'Theme',
+    SAGA_PLAYBACK: 'Playback',
+    SAGA_NETWORK: 'Network',
+    SAGA_WIFI: 'Wi-Fi',
+    SAGA_WIFI_CHANGE: 'Change network',
+    SAGA_WIFI_NOT_CONNECTED: 'Not connected',
+    SAGA_ABOUT: `About ${brand.name}`,
+    SAGA_VERSION: 'Version',
+    SAGA_BUILD: 'Build',
+    SAGA_SOURCE: 'Source code',
+};
 
 i18n
     .use(initReactI18next)
