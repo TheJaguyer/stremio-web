@@ -56,6 +56,11 @@ translations['en-US'].translation = {
     ...translations['en-US'].translation,
     // Pasting links isn't practical on a TV box, so search is just search.
     SEARCH_OR_PASTE_LINK: 'Search',
+    SAGA_KB_DELETE: 'Delete',
+    SAGA_KB_SPACE: 'Space',
+    SAGA_KB_CLEAR: 'Clear',
+    SAGA_KB_CLOSE: 'Close',
+    SAGA_KB_SEARCH: 'Search',
     // Empty Library / Continue Watching: text only, no illustration.
     LIBRARY_EMPTY: 'Nothing here...',
     BOARD_CONTINUE_WATCHING_EMPTY: 'Nothing here...',

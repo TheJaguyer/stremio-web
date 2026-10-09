@@ -17,6 +17,23 @@ const useSearchHistory = require('./useSearchHistory');
 const useLocalSearch = require('./useLocalSearch');
 const styles = require('./styles');
 const useBinaryState = require('stremio/common/useBinaryState');
+const { default: SearchKeyboard } = require('./SearchKeyboard');
+
+// Saga: after a search, focus the first result once it appears (unless the user has moved on already).
+const focusFirstResult = (searchBar) => {
+    const deadline = Date.now() + 8000;
+    const attempt = () => {
+        const focused = document.activeElement;
+        if (focused && focused !== document.body && focused !== searchBar) return;
+        const result = document.querySelector('[class*="search-content"] [class*="search-row"] [tabindex]');
+        if (result) {
+            result.focus();
+        } else if (Date.now() < deadline) {
+            setTimeout(attempt, 150);
+        }
+    };
+    attempt();
+};
 
 const SearchBar = React.memo(({ className, query, active }) => {
     const { t } = useTranslation();
@@ -26,7 +43,9 @@ const SearchBar = React.memo(({ className, query, active }) => {
     const navigate = useNavigate();
     const { handlePlayUrl } = usePlayUrl();
 
-    const [historyOpen, openHistory, closeHistory, ] = useBinaryState(query === null ? true : false);
+    const [historyOpen, openHistory, closeHistory, ] = useBinaryState(false);
+    // Saga: the on-screen keyboard is how Search is typed on a box (remote or gamepad).
+    const [keyboardOpen, openKeyboard, closeKeyboard, ] = useBinaryState(false);
     const [currentQuery, setCurrentQuery] = React.useState(query || '');
     const [previousRoute, setPreviousRoute] = React.useState({ query, active });
     const [, setSearchParams] = useSearchParams();
@@ -41,8 +60,10 @@ const SearchBar = React.memo(({ className, query, active }) => {
     const searchBarOnClick = React.useCallback(() => {
         if (!active) {
             navigate('/search');
+        } else {
+            openKeyboard();
         }
-    }, [active, navigate]);
+    }, [active, navigate, openKeyboard]);
 
     const searchHistoryOnClose = React.useCallback((event) => {
         if (historyOpen && containerRef.current && !containerRef.current.contains(event.target)) {
@@ -92,89 +113,124 @@ const SearchBar = React.memo(({ className, query, active }) => {
         return () => updateLocalSearchDebounced.cancel();
     }, [currentQuery, updateLocalSearchDebounced]);
 
+    // Saga: arriving on Search with nothing searched yet opens the keyboard; coming back to earlier
+    // results (e.g. from a title's page) doesn't.
     React.useEffect(() => {
-        if (routeFocused && active) {
-            searchInputRef.current.focus();
+        if (routeFocused && active && !query) {
+            openKeyboard();
         }
-    }, [routeFocused, active]);
+    }, [routeFocused, active]); // eslint-disable-line react-hooks/exhaustive-deps -- not on every query change
+
+    const keyboardOnSubmit = React.useCallback((searchValue) => {
+        setCurrentQuery(searchValue);
+        setSearchParams({ search: searchValue });
+        closeKeyboard();
+        closeHistory();
+        containerRef.current?.focus();
+        focusFirstResult(containerRef.current);
+    }, [setSearchParams, closeKeyboard, closeHistory]);
+
+    const keyboardOnClose = React.useCallback(() => {
+        setCurrentQuery(query || '');
+        closeKeyboard();
+        closeHistory();
+        containerRef.current?.focus(); // a second Back then leaves Search
+    }, [query, closeKeyboard, closeHistory]);
 
     return (
         // Saga: focusable (tabIndex -1) so remote/gamepad navigation can reach it; OK then opens Search.
-        <div className={classnames(className, styles['search-bar-container'], { 'active': active })} tabIndex={-1} onClick={searchBarOnClick} ref={containerRef}>
+        // The keyboard is a sibling, not a child: React clicks bubble through portals to the parent,
+        // and the bar's onClick would reopen it.
+        <React.Fragment>
+            <div className={classnames(className, styles['search-bar-container'], { 'active': active })} tabIndex={-1} onClick={searchBarOnClick} ref={containerRef}>
+                {
+                    active ?
+                        <TextInput
+                            ref={searchInputRef}
+                            className={styles['search-input']}
+                            type={'text'}
+                            placeholder={t('SEARCH_OR_PASTE_LINK')}
+                            value={currentQuery}
+                            tabIndex={-1}
+                            onChange={queryInputOnChange}
+                            onPaste={queryInputOnPaste}
+                            onSubmit={queryInputOnSubmit}
+                            onClick={openHistory}
+                        />
+                        :
+                        <div className={styles['search-input']}>
+                            <div className={styles['placeholder-label']}>{ t('SEARCH_OR_PASTE_LINK') }</div>
+                        </div>
+                }
+                {
+                    currentQuery.length > 0 ?
+                        <Button className={styles['submit-button-container']} onClick={queryInputClear}>
+                            <Icon className={styles['icon']} name={'close'} />
+                        </Button>
+                        :
+                        <Button className={styles['submit-button-container']}>
+                            <Icon className={styles['icon']} name={'search'} />
+                        </Button>
+                }
+                {
+                    historyOpen && !keyboardOpen && (searchHistory?.items?.length || localSearch?.items?.length) ?
+                        <div className={styles['menu-container']}>
+                            {
+                                searchHistory?.items?.length > 0 ?
+                                    <div className={styles['items']}>
+                                        <div className={styles['title']}>
+                                            <div className={styles['label']}>{ t('STREMIO_TV_SEARCH_HISTORY_TITLE') }</div>
+                                            <button className={styles['search-history-clear']} onClick={searchHistory.clear}>
+                                                { t('CLEAR_HISTORY') }
+                                            </button>
+                                        </div>
+                                        {
+                                            searchHistory.items.slice(0, 8).map(({ query, deepLinks }, index) => (
+                                                <Button key={index} className={styles['item']} href={deepLinks.search} onClick={closeHistory}>
+                                                    {query}
+                                                </Button>
+                                            ))
+                                        }
+                                    </div>
+                                    :
+                                    null
+                            }
+                            {
+                                localSearch?.items?.length ?
+                                    <div className={styles['items']}>
+                                        <div className={styles['title']}>
+                                            <div className={styles['label']}>{ t('SEARCH_SUGGESTIONS') }</div>
+                                        </div>
+                                        {
+                                            localSearch.items.map(({ query, deepLinks }, index) => (
+                                                <Button key={index} className={styles['item']} href={deepLinks.search} onClick={closeHistory}>
+                                                    {query}
+                                                </Button>
+                                            ))
+                                        }
+                                    </div>
+                                    :
+                                    null
+                            }
+                        </div>
+                        :
+                        null
+                }
+            </div>
             {
-                active ?
-                    <TextInput
-                        ref={searchInputRef}
-                        className={styles['search-input']}
-                        type={'text'}
-                        placeholder={t('SEARCH_OR_PASTE_LINK')}
-                        value={currentQuery}
-                        tabIndex={-1}
-                        onChange={queryInputOnChange}
-                        onPaste={queryInputOnPaste}
-                        onSubmit={queryInputOnSubmit}
-                        onClick={openHistory}
+                keyboardOpen ?
+                    <SearchKeyboard
+                        query={currentQuery}
+                        history={searchHistory?.items ?? []}
+                        suggestions={localSearch?.items ?? []}
+                        onChange={setCurrentQuery}
+                        onSubmit={keyboardOnSubmit}
+                        onClose={keyboardOnClose}
                     />
-                    :
-                    <div className={styles['search-input']}>
-                        <div className={styles['placeholder-label']}>{ t('SEARCH_OR_PASTE_LINK') }</div>
-                    </div>
-            }
-            {
-                currentQuery.length > 0 ?
-                    <Button className={styles['submit-button-container']} onClick={queryInputClear}>
-                        <Icon className={styles['icon']} name={'close'} />
-                    </Button>
-                    :
-                    <Button className={styles['submit-button-container']}>
-                        <Icon className={styles['icon']} name={'search'} />
-                    </Button>
-            }
-            {
-                historyOpen && (searchHistory?.items?.length || localSearch?.items?.length) ?
-                    <div className={styles['menu-container']}>
-                        {
-                            searchHistory?.items?.length > 0 ?
-                                <div className={styles['items']}>
-                                    <div className={styles['title']}>
-                                        <div className={styles['label']}>{ t('STREMIO_TV_SEARCH_HISTORY_TITLE') }</div>
-                                        <button className={styles['search-history-clear']} onClick={searchHistory.clear}>
-                                            { t('CLEAR_HISTORY') }
-                                        </button>
-                                    </div>
-                                    {
-                                        searchHistory.items.slice(0, 8).map(({ query, deepLinks }, index) => (
-                                            <Button key={index} className={styles['item']} href={deepLinks.search} onClick={closeHistory}>
-                                                {query}
-                                            </Button>
-                                        ))
-                                    }
-                                </div>
-                                :
-                                null
-                        }
-                        {
-                            localSearch?.items?.length ?
-                                <div className={styles['items']}>
-                                    <div className={styles['title']}>
-                                        <div className={styles['label']}>{ t('SEARCH_SUGGESTIONS') }</div>
-                                    </div>
-                                    {
-                                        localSearch.items.map(({ query, deepLinks }, index) => (
-                                            <Button key={index} className={styles['item']} href={deepLinks.search} onClick={closeHistory}>
-                                                {query}
-                                            </Button>
-                                        ))
-                                    }
-                                </div>
-                                :
-                                null
-                        }
-                    </div>
                     :
                     null
             }
-        </div>
+        </React.Fragment>
     );
 });
 
