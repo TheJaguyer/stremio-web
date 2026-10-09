@@ -4,7 +4,6 @@ import React from 'react';
 import { flushSync } from 'react-dom';
 import { Routes as RRoutes, Route as RRoute, useLocation, useNavigate, useNavigationType, matchPath } from 'react-router';
 import type { Location } from 'react-router';
-import { useProfile } from 'stremio/common';
 import { supportsViewTransitions } from 'stremio/common/Platform/device';
 import routerPaths from './routerPaths';
 import Route from './Route';
@@ -49,26 +48,17 @@ const Routes = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const navigationType = useNavigationType();
-    const profile = useProfile();
-    const previousAuthRef = React.useRef(profile.auth);
     const [views, setViews] = React.useState<(CachedView | null)[]>(() => getNextViews([], location));
 
     /**
      * Replaced onRouteChange with following useEffect:
      */
     React.useEffect(() => {
-        // Handle redirect if user logs out
-        if (previousAuthRef.current !== null && profile.auth === null) {
-            previousAuthRef.current = profile.auth;
-            navigate('/intro', { replace: true });
-        }
-
-        // Handle redirect if user is logged in on intro screen
-        if (profile.auth !== null && location.pathname === '/intro') {
+        // Saga boxes are guest-only: the login/sign-up screen is never shown.
+        if (location.pathname === '/intro') {
             navigate('/', { replace: true });
         }
-        previousAuthRef.current = profile.auth;
-    }, [location.pathname, profile.auth]);
+    }, [location.pathname]);
 
     React.useLayoutEffect(() => {
         const updateViews = () => setViews((currentViews) => getNextViews(currentViews, location));

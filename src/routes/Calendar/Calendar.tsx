@@ -9,7 +9,6 @@ import Selector from './Selector';
 import Table from './Table';
 import List from './List';
 import Details from './Details';
-import Placeholder from './Placeholder';
 import useCalendar from './useCalendar';
 import useCalendarDate from './useCalendarDate';
 import styles from './Calendar.less';
@@ -39,41 +38,36 @@ const Calendar = () => {
 
     return (
         <MainNavBars className={styles['calendar']} route={'calendar'}>
-            {
-                profile.auth !== null ?
-                    <div className={classNames(styles['content'], 'animation-fade-in')}>
-                        <div className={styles['main']}>
-                            <Selector
-                                selected={calendar.selected}
-                                selectable={calendar.selectable}
-                                profile={profile}
-                            />
-                            <Table
-                                items={calendar.items}
-                                selected={selected}
-                                monthInfo={calendar.monthInfo}
-                                onChange={setSelected}
-                            />
-                        </div>
-                        <List
-                            items={calendar.items}
-                            loading={loading}
-                            selected={selected}
-                            monthInfo={calendar.monthInfo}
-                            profile={profile}
-                            onChange={setSelected}
-                        />
-                        <BottomSheet title={detailsTitle} show={detailsInSheet && !!selected} onCloseRequest={onDetailsClose}>
-                            <Details
-                                selected={selected}
-                                items={calendar.items}
-                                hideSpoilers={profile.settings.hideSpoilers}
-                            />
-                        </BottomSheet>
-                    </div>
-                    :
-                    <Placeholder />
-            }
+            <div className={classNames(styles['content'], 'animation-fade-in')}>
+                <div className={styles['main']}>
+                    <Selector
+                        selected={calendar.selected}
+                        selectable={calendar.selectable}
+                        profile={profile}
+                    />
+                    <Table
+                        items={calendar.items}
+                        selected={selected}
+                        monthInfo={calendar.monthInfo}
+                        onChange={setSelected}
+                    />
+                </div>
+                <List
+                    items={calendar.items}
+                    loading={loading}
+                    selected={selected}
+                    monthInfo={calendar.monthInfo}
+                    profile={profile}
+                    onChange={setSelected}
+                />
+                <BottomSheet title={detailsTitle} show={detailsInSheet && !!selected} onCloseRequest={onDetailsClose}>
+                    <Details
+                        selected={selected}
+                        items={calendar.items}
+                        hideSpoilers={profile.settings.hideSpoilers}
+                    />
+                </BottomSheet>
+            </div>
         </MainNavBars>
     );
 };

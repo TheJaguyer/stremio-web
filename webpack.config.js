@@ -12,6 +12,8 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const packageJson = require('./package.json');
 
+// Product name, colours and credits; the Weebio build replaces this file with branding/brand.json.
+const brand = require('./brand.json');
 const COMMIT_HASH = process.env.COMMIT_HASH || execSync('git rev-parse HEAD').toString().trim();
 
 const THREAD_LOADER = {
@@ -239,7 +241,18 @@ module.exports = (env, argv) => ({
                 { from: 'assets/images', to: 'images' },
                 { from: 'assets/screenshots/*.webp', to: 'screenshots/[name][ext]' },
                 { from: '.well-known', to: '.well-known' },
-                { from: 'manifest.json', to: 'manifest.json' },
+                {
+                    from: 'manifest.json',
+                    to: 'manifest.json',
+                    transform: (content) => JSON.stringify({
+                        ...JSON.parse(content.toString()),
+                        name: brand.name,
+                        short_name: brand.name,
+                        description: brand.tagline,
+                        background_color: brand.backgroundColor,
+                        theme_color: brand.themeColor,
+                    }, null, 4),
+                },
             ]
         }),
         new MiniCssExtractPlugin({
@@ -251,6 +264,7 @@ module.exports = (env, argv) => ({
             scriptLoading: 'blocking',
             faviconsPath: 'favicons',
             imagesPath: 'images',
+            brand,
         }),
     ].filter(Boolean)
 });

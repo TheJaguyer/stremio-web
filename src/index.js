@@ -22,8 +22,30 @@ const { default: WebUpdateScreen } = require('./App/WebUpdateScreen');
 const { CoreProvider } = require('./core');
 const { FileDropProvider, PlatformProvider } = require('./common');
 
+const brand = require('../brand.json');
+
+// Colour theme: served by weebio-agent (/weebio/themes/<id>.css) and chosen in Settings. The agent's own
+// pages share this origin and key, so the boot and Wi-Fi screens always match the app.
+(() => {
+    let theme = 'saga';
+    try {
+        theme = localStorage.getItem('weebio.theme') || theme;
+    } catch (_) { /* storage unavailable: keep the default */ }
+    document.documentElement.dataset.theme = theme;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = `/weebio/themes/${encodeURIComponent(theme)}.css`;
+    document.head.appendChild(link);
+})();
+
+// Every interface string, in every language, names the product from brand.json instead of "Stremio".
+const rebrand = (strings) => Object.fromEntries(Object.entries(strings).map(([key, text]) => [
+    key,
+    typeof text === 'string' ? text.replace(/Stremio/g, brand.name) : text
+]));
+
 const translations = Object.fromEntries(Object.entries(stremioTranslations()).map(([key, value]) => [key, {
-    translation: value
+    translation: rebrand(value)
 }]));
 
 i18n
