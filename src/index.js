@@ -21,6 +21,7 @@ const App = require('./App');
 const { default: WebUpdateScreen } = require('./App/WebUpdateScreen');
 const { CoreProvider } = require('./core');
 const { syncAddons } = require('./saga/addonSync');
+require('./saga/scrollHover');
 const { FileDropProvider, PlatformProvider } = require('./common');
 
 const brand = require('../brand.json');
@@ -65,7 +66,6 @@ translations['en-US'].translation = {
     SAGA_BOX_ID: 'Box ID',
     SAGA_VERSION: 'Version',
     SAGA_BUILD: 'Build',
-    SAGA_SOURCE: 'Source code',
 };
 
 i18n

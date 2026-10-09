@@ -20,6 +20,12 @@
     padding: 1rem;
     overflow: visible;
 
+    // Saga: ignore the pointer while the page scrolls (src/saga/scrollHover.js), so posters passing
+    // under the mouse don't re-render and animate. The row underneath still receives the wheel.
+    :global(html.saga-scrolling) & {
+        pointer-events: none;
+    }
+
     &:global(.hovered), &:focus-within, &:global(.active), &:global(.selected) {
         outline-style: none;
         transition: background-color 100ms ease-out;

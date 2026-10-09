@@ -10,7 +10,6 @@ type Brand = {
     name: string,
     tagline: string,
     credits: string,
-    sourceUrl: string,
 };
 
 const brand: Brand = JSON.parse(process.env.BRAND ?? '{}');
@@ -42,7 +41,6 @@ const About = forwardRef<HTMLDivElement>((_, ref) => {
                     {boxId && <div>{t('SAGA_BOX_ID')}: {boxId}</div>}
                     <div>{t('SAGA_VERSION')}: {version ?? process.env.VERSION}</div>
                     <div title={process.env.COMMIT_HASH}>{t('SAGA_BUILD')}: {process.env.COMMIT_HASH?.slice(0, 7)}</div>
-                    <div>{t('SAGA_SOURCE')}: {brand.sourceUrl?.replace(/^https?:\/\//, '')}</div>
                 </div>
             </div>
         </Section>
