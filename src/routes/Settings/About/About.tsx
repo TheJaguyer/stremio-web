@@ -35,7 +35,7 @@ const About = forwardRef<HTMLDivElement>((_, ref) => {
     return (
         <Section ref={ref} label={'SAGA_ABOUT'}>
             <div className={styles['about']}>
-                <SagaMark className={styles['logo']} variant={'logo'} />
+                <SagaMark className={styles['mark']} />
                 <div className={styles['tagline']}>{brand.tagline}</div>
                 <div className={styles['credits']}>{brand.credits}</div>
                 <div className={styles['details']}>
