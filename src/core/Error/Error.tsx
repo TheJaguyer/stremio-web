@@ -3,7 +3,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Button from 'stremio/components/Button';
-import SagaEmpty from 'stremio/components/SagaEmpty';
 import styles from './styles.less';
 
 type Props = {
@@ -20,7 +19,6 @@ const Error = ({ message }: Props) => {
 
     return (
         <div className={styles['error-container']}>
-            <SagaEmpty className={styles['error-image']} />
             <div className={styles['info']}>
                 <div className={styles['title']}>
                     {t('GENERIC_ERROR_MESSAGE')}

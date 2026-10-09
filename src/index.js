@@ -54,6 +54,9 @@ const translations = Object.fromEntries(Object.entries(stremioTranslations()).ma
 // Labels for Saga's own Settings sections. English only; other languages fall back to these.
 translations['en-US'].translation = {
     ...translations['en-US'].translation,
+    // Empty Library / Continue Watching: text only, no illustration.
+    LIBRARY_EMPTY: 'Nothing here...',
+    BOARD_CONTINUE_WATCHING_EMPTY: 'Nothing here...',
     SAGA_APPEARANCE: 'Appearance',
     SAGA_THEME: 'Theme',
     SAGA_PLAYBACK: 'Playback',

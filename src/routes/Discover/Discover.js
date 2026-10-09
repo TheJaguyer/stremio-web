@@ -1,7 +1,6 @@
 // Copyright (C) 2017-2023 Smart code 203358507
 
 const React = require('react');
-const { default: SagaEmpty } = require('stremio/components/SagaEmpty');
 const { useTranslation } = require('react-i18next');
 const { useParams } = require('react-router');
 const { useSearchParams } = require('react-router-dom');
@@ -195,7 +194,6 @@ const Discover = () => {
     const renderEmptyState = () => (
         <DelayedRenderer delay={500}>
             <div className={styles['message-container']}>
-                <SagaEmpty className={styles['image']} />
                 <div className={styles['message-label']}>{t('NO_CATALOG_SELECTED')}</div>
             </div>
         </DelayedRenderer>
@@ -203,7 +201,6 @@ const Discover = () => {
 
     const renderErrorState = (msg) => (
         <div className={styles['message-container']}>
-            <SagaEmpty className={styles['image']} />
             <div className={styles['message-label']}>{msg}</div>
         </div>
     );
