@@ -144,8 +144,6 @@ const MetaDetails = () => {
                 <HorizontalNavBar
                     className={styles['nav-bar']}
                     backButton={true}
-                    fullscreenButton={true}
-                    navMenu={true}
                     originPath={originPath}
                 />
                 <LiveTvPlaceholder />
@@ -166,8 +164,6 @@ const MetaDetails = () => {
                 <HorizontalNavBar
                     className={styles['nav-bar']}
                     backButton={true}
-                    fullscreenButton={true}
-                    navMenu={true}
                     originPath={originPath}
                 />
             </LiveTvDetails>
@@ -191,8 +187,6 @@ const MetaDetails = () => {
             <HorizontalNavBar
                 className={styles['nav-bar']}
                 backButton={true}
-                fullscreenButton={true}
-                navMenu={true}
                 originPath={originPath}
             />
             <div ref={contentRef} className={styles['metadetails-content']}>
@@ -284,8 +278,6 @@ const MetaDetailsFallback = () => {
             <HorizontalNavBar
                 className={styles['nav-bar']}
                 backButton={true}
-                fullscreenButton={true}
-                navMenu={true}
             />
             {type === 'tv' && <LiveTvPlaceholder />}
         </div>

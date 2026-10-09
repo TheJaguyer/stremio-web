@@ -38,8 +38,6 @@ const MainNavBars = memo(({ className, route, query, children }: Props) => {
                 query={query}
                 backButton={false}
                 searchBar={true}
-                fullscreenButton={true}
-                navMenu={true}
             />
             <VerticalNavBar
                 ref={navRef}

@@ -6,22 +6,13 @@ const PropTypes = require('prop-types');
 const classnames = require('classnames');
 const { default: Icon } = require('@stremio/stremio-icons/react');
 const { Button, Image } = require('stremio/components');
-const { useFullscreen } = require('stremio/common/Fullscreen');
 const { useHorizontalNavGamepadNavigation } = require('stremio/services/GamepadNavigation');
 const SearchBar = require('./SearchBar');
-const NavMenu = require('./NavMenu');
+const { default: BoxRune } = require('./BoxRune');
 const styles = require('./styles');
-const { t } = require('i18next');
 
-const HorizontalNavBar = React.memo(({ className, route, query, title, backButton, searchBar, fullscreenButton, navMenu, originPath, hdrInfo, ...props }) => {
+const HorizontalNavBar = React.memo(({ className, route, query, title, backButton, searchBar, originPath, hdrInfo, ...props }) => {
     const backButtonOnClick = useGoBack(originPath);
-    const [fullscreen, requestFullscreen, exitFullscreen, , supported] = useFullscreen();
-    const renderNavMenuLabel = React.useCallback(({ ref, className, onClick, children, }) => (
-        <Button ref={ref} className={classnames(className, styles['button-container'], styles['menu-button-container'])} tabIndex={-1} onClick={onClick}>
-            <Icon className={styles['icon']} name={'person-outline'} />
-            {children}
-        </Button>
-    ), []);
     useHorizontalNavGamepadNavigation(route || className, backButton ? backButtonOnClick : undefined);
     return (
         <nav {...props} className={classnames(className, styles['horizontal-nav-bar-container'])}>
@@ -60,20 +51,8 @@ const HorizontalNavBar = React.memo(({ className, route, query, title, backButto
                         :
                         null
                 }
-                {
-                    supported && fullscreenButton ?
-                        <Button className={styles['button-container']} title={fullscreen ? t('EXIT_FULLSCREEN') : t('ENTER_FULLSCREEN')} tabIndex={-1} onClick={fullscreen ? exitFullscreen : requestFullscreen}>
-                            <Icon className={styles['icon']} name={fullscreen ? 'minimize' : 'maximize'} />
-                        </Button>
-                        :
-                        null
-                }
-                {
-                    navMenu ?
-                        <NavMenu renderLabel={renderNavMenuLabel} />
-                        :
-                        null
-                }
+                {/* Saga: no fullscreen toggle (always fullscreen) or profile menu; the box's rune instead. */}
+                <BoxRune />
             </div>
         </nav>
     );
@@ -88,8 +67,6 @@ HorizontalNavBar.propTypes = {
     title: PropTypes.string,
     backButton: PropTypes.bool,
     searchBar: PropTypes.bool,
-    fullscreenButton: PropTypes.bool,
-    navMenu: PropTypes.bool,
     originPath: PropTypes.string,
     hdrInfo: PropTypes.shape({
         gamma: PropTypes.string,
