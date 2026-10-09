@@ -34,7 +34,8 @@ const App = () => {
     const goBack = useGoBack();
     const locationPath = createPath(location);
     const previousPathRef = React.useRef(locationPath);
-    const [gamepadSupportEnabled, setGamepadSupportEnabled] = React.useState(false);
+    // Saga: TV boxes are driven by remotes and gamepads, so gamepad (and remote) navigation is always on.
+    const gamepadSupportEnabled = true;
     const services = React.useMemo(() => {
         return {
             chromecast: new Chromecast(),
@@ -114,10 +115,6 @@ const App = () => {
     React.useEffect(() => {
         if (typeof profile.settings?.interfaceLanguage === 'string') {
             i18n.changeLanguage(profile.settings.interfaceLanguage);
-        }
-
-        if (typeof profile.settings?.gamepadSupport === 'boolean') {
-            setGamepadSupportEnabled(profile.settings.gamepadSupport);
         }
 
         if (profile.settings?.quitOnClose && shell.state.windowClosed) {

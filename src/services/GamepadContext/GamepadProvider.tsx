@@ -174,6 +174,11 @@ const GamepadProvider = ({ enabled, onGuide, children }: GamepadProviderProps) =
                         if (buttonsState & (1 << 3)) emit('buttonY');
                         if (buttonsState & (1 << 4)) emit('buttonLT');
                         if (buttonsState & (1 << 5)) emit('buttonRT');
+                        // Saga: the D-pad (standard mapping 12-15) navigates like the left stick.
+                        if (buttonsState & (1 << 12)) emit('analog', 'up');
+                        if (buttonsState & (1 << 13)) emit('analog', 'down');
+                        if (buttonsState & (1 << 14)) emit('analog', 'left');
+                        if (buttonsState & (1 << 15)) emit('analog', 'right');
                     }
 
                     const deadZone = 0.05;
@@ -259,6 +264,66 @@ const GamepadProvider = ({ enabled, onGuide, children }: GamepadProviderProps) =
         return () => {
             cancelAnimationFrame(animationFrameId);
         };
+    }, [enabled]);
+
+    // Saga: TV remotes (HDMI-CEC buttons, mapped to keys on the box) and keyboards drive the same spatial
+    // navigation as a gamepad: arrows move focus, Enter selects, Escape goes back. In the player, arrows
+    // keep seeking unless a control has focus; up/down move onto the controls; Enter plays/pauses.
+    useEffect(() => {
+        if (!enabled) return;
+
+        const DIRECTIONS: Record<string, string> = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
+        const isTyping = (element: Element | null) => !!element &&
+            (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA' || (element as HTMLElement).isContentEditable);
+        const focusedControl = () => document.activeElement && document.activeElement !== document.body ?
+            document.activeElement as HTMLElement : null;
+        const menuOpen = () => !!document.querySelector('.modals-container > *, [class*="dropdown"][class*="open"]');
+        const consume = (event: KeyboardEvent) => {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        };
+
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+            const direction = DIRECTIONS[event.key];
+            const control = focusedControl();
+            const typing = isTyping(control);
+
+            if (window.location.hash.startsWith('#/player')) {
+                if (direction === 'up' || direction === 'down' || (direction && control)) {
+                    consume(event);
+                    emit('analog', direction);
+                } else if (event.key === 'Enter') {
+                    consume(event);
+                    emit(control ? 'buttonA' : 'buttonX');
+                } else if (event.key === 'Escape' && control && !menuOpen()) {
+                    consume(event);
+                    control.blur();
+                }
+                // Otherwise Stremio's player shortcuts apply: left/right seek, Space, Escape exits.
+                return;
+            }
+
+            if (direction) {
+                if (typing && (direction === 'left' || direction === 'right')) return; // move the text caret
+                consume(event);
+                emit('analog', direction);
+            } else if (event.key === 'Enter' && !typing) {
+                consume(event);
+                emit('buttonA');
+            } else if (event.key === 'Escape') {
+                if (typing) {
+                    consume(event);
+                    control?.blur();
+                } else if (!menuOpen()) { // open menus and dialogs close themselves on Escape
+                    consume(event);
+                    if (window.location.hash !== '#/' && window.location.hash !== '') window.history.back();
+                }
+            }
+        };
+
+        window.addEventListener('keydown', onKeyDown, { capture: true });
+        return () => window.removeEventListener('keydown', onKeyDown, { capture: true });
     }, [enabled]);
 
     return (
