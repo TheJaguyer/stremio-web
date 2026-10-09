@@ -9,12 +9,24 @@
     align-items: center;
     justify-content: center;
     border-radius: 0.75rem;
+    position: relative;
 
-    // Saga: visible focus for remote/gamepad navigation (same ring as focused posters).
+    // Saga: visible focus for remote/gamepad navigation (same ring as focused posters), and the label
+    // appears like it does on mouse hover.
     &:focus {
         outline: none;
         background-color: var(--overlay-color);
         box-shadow: 0 0 0 0.2rem var(--primary-foreground-color) inset;
+
+        .label {
+            opacity: 0.6;
+        }
+
+        &:global(.selected) {
+            .label {
+                opacity: 1;
+            }
+        }
     }
 
     @media (pointer: fine) {
@@ -34,7 +46,7 @@
     }
 
     &:global(.selected) {
-        .icon, .label {
+        .icon {
             opacity: 1;
         }
 
@@ -47,7 +59,6 @@
         flex: none;
         width: 2.2rem;
         height: 2.2rem;
-        margin-bottom: 0.5rem;
     }
 
     .icon {
@@ -55,8 +66,11 @@
     }
 
     .label {
-        flex: none;
-        position: relative;
+        // Saga: out of the flow, under the icon, so the icon stays centred while the label is hidden.
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0.25rem;
         max-width: 100%;
         max-height: 2.4em;
         padding: 0 0.5rem;
@@ -67,12 +81,7 @@
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
-        // Saga: labels always shown (upstream reveals them only on mouse hover), brighter when focused.
-        opacity: 0.6;
-    }
-
-    &:focus .label {
-        opacity: 1;
+        opacity: 0;
     }
 }
 

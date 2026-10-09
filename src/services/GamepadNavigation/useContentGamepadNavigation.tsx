@@ -19,6 +19,28 @@ const getActiveScope = (fallback: HTMLDivElement | null): HTMLElement | null => 
     return fallback;
 };
 
+// Saga: the scrolling area an element sits in (the board, a catalog grid, settings...), if any.
+const scrollParent = (element: HTMLElement): HTMLElement | null => {
+    for (let node = element.parentElement; node; node = node.parentElement) {
+        const { overflowY } = getComputedStyle(node);
+        if ((overflowY === 'auto' || overflowY === 'scroll') && node.scrollHeight > node.clientHeight + 10) return node; // (skips rows that only overflow sideways)
+    }
+    return null;
+};
+
+// Saga: focus an element; if it's in the first row of its scrolling area, scroll that area all the way to
+// the top, so the row (and its title) isn't left partly cut off after coming back up from further down.
+const focusAndReveal = (element: HTMLElement) => {
+    element.focus();
+    const scroller = scrollParent(element);
+    if (!scroller || scroller.scrollTop === 0) return;
+    const top = element.getBoundingClientRect().top;
+    const rowTolerance = element.getBoundingClientRect().height / 2;
+    const above = Array.from(scroller.querySelectorAll<HTMLElement>(FOCUSABLE))
+        .some((other) => other !== element && other.offsetParent !== null && other.getBoundingClientRect().top < top - rowTolerance);
+    if (!above) scroller.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
 const useContentGamepadNavigation = (
     sectionRef: React.RefObject<HTMLDivElement>,
     gamepadHandlerId: string
@@ -95,7 +117,7 @@ const useContentGamepadNavigation = (
             });
 
             if (closestElement) {
-                closestElement.focus();
+                focusAndReveal(closestElement as HTMLElement);
             }
         };
 

@@ -25,6 +25,27 @@ const detectControllerType = (gamepad: Gamepad): ControllerType => {
     return 'generic';
 };
 
+// Saga: D-pad direction from the standard mapping (buttons 12-15). Controllers the browser doesn't know
+// report the D-pad as a "hat" on axes 6/7 instead (Linux ABS_HAT0X/Y), so read those as well.
+type Direction = 'up' | 'down' | 'left' | 'right';
+const DPAD_REPEAT_DELAY = 400; // ms held before repeating
+const DPAD_REPEAT_EVERY = 150;
+const dpadDirection = (gamepad: Gamepad): Direction | null => {
+    const pressed = (i: number) => !!gamepad.buttons[i]?.pressed;
+    if (pressed(12)) return 'up';
+    if (pressed(13)) return 'down';
+    if (pressed(14)) return 'left';
+    if (pressed(15)) return 'right';
+    if (gamepad.mapping !== 'standard' && gamepad.axes.length >= 8) {
+        const [x, y] = [gamepad.axes[6], gamepad.axes[7]];
+        if (y < -0.5) return 'up';
+        if (y > 0.5) return 'down';
+        if (x < -0.5) return 'left';
+        if (x > 0.5) return 'right';
+    }
+    return null;
+};
+
 const GamepadProvider = ({ enabled, onGuide, children }: GamepadProviderProps) => {
     const { t } = useTranslation();
     const toast = useToast();
@@ -33,6 +54,7 @@ const GamepadProvider = ({ enabled, onGuide, children }: GamepadProviderProps) =
     const lastButtonPressedTime = useRef<number>(0);
     const axisTimer = useRef<number>(0);
     const axisTimerRight = useRef<number>(0);
+    const dpadHeld = useRef<({ direction: Direction, next: number } | null)[]>([]);
     // Saga: B means "back" wherever a screen hasn't claimed it (e.g. the main tabs and Search): it leaves a
     // text field first, then goes back a screen. Seeded here, before any screen registers, because the
     // most recently registered handler for an event wins; screens with their own B action still override it.
@@ -186,11 +208,20 @@ const GamepadProvider = ({ enabled, onGuide, children }: GamepadProviderProps) =
                         if (buttonsState & (1 << 3)) emit('buttonY');
                         if (buttonsState & (1 << 4)) emit('buttonLT');
                         if (buttonsState & (1 << 5)) emit('buttonRT');
-                        // Saga: the D-pad (standard mapping 12-15) navigates like the left stick.
-                        if (buttonsState & (1 << 12)) emit('analog', 'up');
-                        if (buttonsState & (1 << 13)) emit('analog', 'down');
-                        if (buttonsState & (1 << 14)) emit('analog', 'left');
-                        if (buttonsState & (1 << 15)) emit('analog', 'right');
+                    }
+
+                    // Saga: the D-pad navigates exactly like the left stick: one step per press, and holding it
+                    // repeats (after a short pause, so a tap never moves twice).
+                    const dpad = dpadDirection(controller);
+                    const held = dpadHeld.current[index];
+                    if (!dpad) {
+                        dpadHeld.current[index] = null;
+                    } else if (!held || held.direction !== dpad) {
+                        dpadHeld.current[index] = { direction: dpad, next: currentTime + DPAD_REPEAT_DELAY };
+                        emit('analog', dpad);
+                    } else if (currentTime >= held.next) {
+                        held.next = currentTime + DPAD_REPEAT_EVERY;
+                        emit('analog', dpad);
                     }
 
                     const deadZone = 0.05;
