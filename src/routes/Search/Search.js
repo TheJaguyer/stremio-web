@@ -49,14 +49,6 @@ const Search = () => {
                                     <Icon className={styles['icon']} name={'actors'} />
                                     <div className={styles['label']}>{t.string('SEARCH_PERSONS')}</div>
                                 </div>
-                                <div className={styles['search-hint-container']}>
-                                    <Icon className={styles['icon']} name={'link'} />
-                                    <div className={styles['label']}>{t.string('SEARCH_PROTOCOLS')}</div>
-                                </div>
-                                <div className={styles['search-hint-container']}>
-                                    <Icon className={styles['icon']} name={'imdb-outline'} />
-                                    <div className={styles['label']}>{t.string('SEARCH_TYPES')}</div>
-                                </div>
                             </div>
                         </div>
                         :

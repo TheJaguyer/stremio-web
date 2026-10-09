@@ -54,6 +54,8 @@ const translations = Object.fromEntries(Object.entries(stremioTranslations()).ma
 // Labels for Saga's own Settings sections. English only; other languages fall back to these.
 translations['en-US'].translation = {
     ...translations['en-US'].translation,
+    // Pasting links isn't practical on a TV box, so search is just search.
+    SEARCH_OR_PASTE_LINK: 'Search',
     // Empty Library / Continue Watching: text only, no illustration.
     LIBRARY_EMPTY: 'Nothing here...',
     BOARD_CONTINUE_WATCHING_EMPTY: 'Nothing here...',
