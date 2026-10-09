@@ -54,8 +54,8 @@ const Routes = () => {
      * Replaced onRouteChange with following useEffect:
      */
     React.useEffect(() => {
-        // Saga boxes are guest-only: the login/sign-up screen is never shown.
-        if (location.pathname === '/intro') {
+        // Saga boxes are guest-only (no login/sign-up screen) and ship a fixed addon list (no Addons screen).
+        if (location.pathname === '/intro' || location.pathname.startsWith('/addons')) {
             navigate('/', { replace: true });
         }
     }, [location.pathname]);

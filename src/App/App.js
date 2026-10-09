@@ -5,6 +5,7 @@ const React = require('react');
 const { useTranslation } = require('react-i18next');
 const { createPath, useLocation, useNavigate } = require('react-router');
 const { useCore } = require('stremio/core');
+const { completeFirstRun } = require('stremio/saga/addonSync');
 const { Routes, useGoBack } = require('stremio-router');
 const { Chromecast, ServicesProvider, GamepadProvider } = require('stremio/services');
 const { FullscreenProvider, ToastProvider, TooltipProvider, ShortcutsProvider, DiscordProvider, CONSTANTS, useBinaryState, useProfile, withCoreSuspender, usePlatform } = require('stremio/common');
@@ -19,7 +20,7 @@ const { default: useInterfaceScale } = require('./useInterfaceScale');
 const styles = require('./styles');
 
 const ProtectedRoutes = withCoreSuspender(Routes);
-const NAVIGATE_TABS_ROUTES = ['/', '/discover', '/library', '/calendar', '/addons', '/settings'];
+const NAVIGATE_TABS_ROUTES = ['/', '/discover', '/library', '/calendar', '/settings'];
 
 const App = () => {
     const core = useCore();
@@ -70,6 +71,11 @@ const App = () => {
                 break;
         }
     }, [toggleShortcutModal, toggleGamepadModal, changeInterfaceScale, navigate, goBack]);
+
+    // Saga: on a box's first start, finish the addon sync once stremio-core is running.
+    React.useEffect(() => {
+        completeFirstRun(core);
+    }, []);
 
     React.useEffect(() => {
         const prevPath = previousPathRef.current;

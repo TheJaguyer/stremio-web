@@ -30,9 +30,8 @@ const StreamsList = ({ className, video, type, externalPlayerCallbackCanMarkWatc
         streamsContainerRef.current.scrollTo({ top: 0, left: 0, behavior: platform.name === 'ios' ? 'smooth' : 'instant' });
         setSelectedAddon(value);
     }, [platform]);
-    const showInstallAddonsButton = React.useMemo(() => {
-        return !profile || profile.auth === null || profile.auth?.user?.isNewUser === true && !video?.upcoming;
-    }, [profile, video]);
+    // Saga: the addon list is fixed, so never suggest installing more.
+    const showInstallAddonsButton = false;
     const backButtonOnClick = React.useCallback(() => {
         if (video.deepLinks && typeof video.deepLinks.metaDetailsVideos === 'string') {
             const navigateTo = `${video.deepLinks.metaDetailsVideos}${

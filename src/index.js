@@ -20,6 +20,7 @@ const stremioTranslations = require('stremio-translations');
 const App = require('./App');
 const { default: WebUpdateScreen } = require('./App/WebUpdateScreen');
 const { CoreProvider } = require('./core');
+const { syncAddons } = require('./saga/addonSync');
 const { FileDropProvider, PlatformProvider } = require('./common');
 
 const brand = require('../brand.json');
@@ -84,7 +85,8 @@ const appInfo = {
 };
 
 const root = ReactDOM.createRoot(document.getElementById('app'));
-root.render(
+// Saga: put the box's addon list in place before stremio-core starts and reads it.
+syncAddons().catch((error) => console.error('[saga] addon sync failed', error)).finally(() => root.render(
     <React.StrictMode>
         <PlatformProvider>
             <CoreProvider appInfo={appInfo}>
@@ -99,4 +101,4 @@ root.render(
             </CoreProvider>
         </PlatformProvider>
     </React.StrictMode>
-);
+));
