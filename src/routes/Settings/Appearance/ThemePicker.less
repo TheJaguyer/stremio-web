@@ -1,7 +1,9 @@
 .themes {
-    display: flex;
-    flex-wrap: wrap;
+    // Equal columns that fill the option's width, so long names (Muspelheim) don't misalign the grid.
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 1rem;
+    width: 100%;
     // Room for the focus glow and rounded border, which would otherwise be clipped at the edges.
     padding: 1rem;
 
@@ -23,6 +25,10 @@
         }
 
         .name {
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
             font-size: 0.9rem;
             color: var(--primary-foreground-color);
         }

@@ -2,6 +2,7 @@
 
 import React, { forwardRef, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import SagaMark from 'stremio/components/SagaMark';
 import { Section } from '../components';
 import styles from './About.less';
 
@@ -34,7 +35,7 @@ const About = forwardRef<HTMLDivElement>((_, ref) => {
     return (
         <Section ref={ref} label={'SAGA_ABOUT'}>
             <div className={styles['about']}>
-                <img className={styles['logo']} src={require('/assets/images/logo.png')} alt={brand.name} />
+                <SagaMark className={styles['logo']} variant={'logo'} />
                 <div className={styles['tagline']}>{brand.tagline}</div>
                 <div className={styles['credits']}>{brand.credits}</div>
                 <div className={styles['details']}>

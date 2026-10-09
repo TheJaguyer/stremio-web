@@ -5,10 +5,11 @@ const { useGoBack } = require('stremio-router');
 const PropTypes = require('prop-types');
 const classnames = require('classnames');
 const { default: Icon } = require('@stremio/stremio-icons/react');
-const { Button, Image } = require('stremio/components');
+const { Button } = require('stremio/components');
 const { useHorizontalNavGamepadNavigation } = require('stremio/services/GamepadNavigation');
 const SearchBar = require('./SearchBar');
 const { default: BoxRune } = require('./BoxRune');
+const { default: SagaMark } = require('stremio/components/SagaMark');
 const styles = require('./styles');
 
 const HorizontalNavBar = React.memo(({ className, route, query, title, backButton, searchBar, originPath, hdrInfo, ...props }) => {
@@ -23,11 +24,7 @@ const HorizontalNavBar = React.memo(({ className, route, query, title, backButto
                     </Button>
                     :
                     <div className={styles['logo-container']}>
-                        <Image
-                            className={styles['logo']}
-                            src={require('/assets/images/stremio_symbol.png')}
-                            alt={' '}
-                        />
+                        <SagaMark className={styles['logo']} />
                     </div>
             }
             {

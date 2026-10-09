@@ -166,9 +166,16 @@ module.exports = (env, argv) => ({
                 type: 'asset/inline'
             },
             {
+                // Saga: `?raw` imports an SVG's markup, to draw it inline (theme-coloured via CSS).
+                test: /\.svg$/,
+                exclude: /node_modules/,
+                resourceQuery: /raw/,
+                type: 'asset/source'
+            },
+            {
                 test: /\.(png|jpe?g|svg)$/,
                 exclude: /node_modules/,
-                resourceQuery: { not: [/inline/] },
+                resourceQuery: { not: [/inline/, /raw/] },
                 type: 'asset/resource',
                 generator: {
                     filename: 'images/[name][ext][query]'

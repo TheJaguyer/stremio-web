@@ -1,16 +1,20 @@
+.ethernet {
+    margin-bottom: 2rem;
+    color: var(--primary-foreground-color);
+}
+
+// Network name on its own line above the button, so long names have the full width.
 .wifi {
     display: flex;
-    align-items: center;
-    gap: 1.5rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
     width: 100%;
     min-width: 0;
 
     .ssid {
-        flex: 1;
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        max-width: 100%;
+        overflow-wrap: anywhere;
         color: var(--primary-foreground-color);
     }
 
