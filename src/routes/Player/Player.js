@@ -520,7 +520,30 @@ const Player = () => {
         }
     }, [onSeekPrev, onSeekNext, onVolumeUp, onVolumeDown]);
 
-    useContentGamepadNavigation(playerRef, GAMEPAD_HANDLER_ID);
+    // Saga: with no control focused, Up reveals the controls on the back button and Down on play/pause.
+    const gamepadEntry = React.useCallback((direction) => {
+        if (direction === 'up') return playerRef.current?.querySelector('[class*="nav-bar-layer"] [class*="back-button-container"]') ?? null;
+        if (direction === 'down') return controlBarRef.current?.querySelector('[class*="control-bar-button"]') ?? null;
+        return null;
+    }, []);
+    useContentGamepadNavigation(playerRef, GAMEPAD_HANDLER_ID, { entry: gamepadEntry });
+
+    // Saga: a focused control keeps the controls on screen; once they hide again, drop focus so arrows seek.
+    React.useEffect(() => {
+        const element = playerRef.current;
+        if (!element) return;
+        const onFocusIn = () => {
+            setImmersed(false);
+            setImmersedDebounced(true);
+        };
+        element.addEventListener('focusin', onFocusIn);
+        return () => element.removeEventListener('focusin', onFocusIn);
+    }, []);
+    React.useEffect(() => {
+        if (overlayHidden && playerRef.current?.contains(document.activeElement)) {
+            document.activeElement.blur();
+        }
+    }, [overlayHidden]);
 
     React.useEffect(() => {
         gamepad?.on('buttonX', GAMEPAD_HANDLER_ID, onPlayPause);
@@ -833,16 +856,15 @@ const Player = () => {
         }
     }, [isEpg, closeMenus, player.nextVideo, nextVideo, handleNextVideoNavigation]));
 
+    // Saga: Back (remote Back, gamepad B, Escape) closes an open menu, otherwise leaves the player. The box
+    // is always fullscreen, so upstream's "first Escape only leaves fullscreen" doesn't apply.
     useShortcut('exit', React.useCallback(() => {
-        closeMenus();
-        // When escExitFullscreen is enabled, FullscreenProvider handles the first
-        // Escape press by leaving fullscreen. Only skip navigating back in that case,
-        // otherwise Escape would never exit the player in windowed mode.
-        if (settings.escExitFullscreen && fullscreen) {
+        if (menusOpen) {
+            closeMenus();
             return;
         }
         goBack();
-    }, [closeMenus, settings.escExitFullscreen, fullscreen, goBack]));
+    }, [menusOpen, closeMenus, goBack]));
 
     React.useLayoutEffect(() => {
         if (!routeFocused) {

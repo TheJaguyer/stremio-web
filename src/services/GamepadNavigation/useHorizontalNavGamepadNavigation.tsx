@@ -12,7 +12,9 @@ const useHorizontalNavGamepadNavigation = (gamepadHandlerId: string, onGoBack?: 
         const goBack = () => onGoBack?.();
 
         gamepad?.on('buttonY', gamepadHandlerId, toggleFullscreen as () => void);
-        gamepad?.on('buttonB', gamepadHandlerId, goBack);
+        // Saga: only claim B when there is a back button; otherwise a no-op here would override the
+        // default "B = back" handler (most recently registered handler wins).
+        if (onGoBack) gamepad?.on('buttonB', gamepadHandlerId, goBack);
 
         return () => {
             gamepad?.off('buttonY', gamepadHandlerId);

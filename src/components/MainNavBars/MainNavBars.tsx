@@ -13,6 +13,8 @@ const TABS = [
     { id: 'settings', label: 'SETTINGS', icon: 'settings', href: '/settings' },
 ];
 
+const REGIONS = { regions: true };
+
 type Props = {
     className: string,
     route?: string,
@@ -22,12 +24,12 @@ type Props = {
 
 const MainNavBars = memo(({ className, route, query, children }: Props) => {
     const navRef = React.useRef(null);
-    // Saga: spatial navigation covers the whole screen (search bar, side tabs and content), so a remote or
-    // D-pad can move from the content up to the search bar and left to the tabs.
+    // Saga: spatial navigation covers the whole screen. Tabs sit left of the content and the search bar above
+    // it; moves between those three areas only go in straight lines (see `regions`).
     const screenRef = React.useRef(null);
 
     const navRoute = route === 'continue_watching' ? 'library' : (route ?? '');
-    useContentGamepadNavigation(screenRef, navRoute);
+    useContentGamepadNavigation(screenRef, navRoute, REGIONS);
     useVerticalNavGamepadNavigation(navRef, navRoute);
 
     return (

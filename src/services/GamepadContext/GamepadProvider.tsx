@@ -99,6 +99,12 @@ const GamepadProvider = ({ enabled, onGuide, children }: GamepadProviderProps) =
     }, []);
 
     const emit = (event: string, data?: string) => {
+        // Saga: in the player, B is the remote's Back: it closes an open menu, otherwise leaves the player.
+        // Sent as Escape so both inputs share the player's own exit handling.
+        if (event === 'buttonB' && window.location.hash.startsWith('#/player')) {
+            document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', keyCode: 27, bubbles: true, cancelable: true }));
+            return;
+        }
         if (eventHandlers.current.has(event)) {
             const handlersMap = eventHandlers.current.get(event)!;
 
@@ -311,7 +317,8 @@ const GamepadProvider = ({ enabled, onGuide, children }: GamepadProviderProps) =
 
     // Saga: TV remotes (HDMI-CEC buttons, mapped to keys on the box) and keyboards drive the same spatial
     // navigation as a gamepad: arrows move focus, Enter selects, Escape goes back. In the player, arrows
-    // keep seeking unless a control has focus; up/down move onto the controls; Enter plays/pauses.
+    // keep seeking unless a control has focus; up/down move onto the controls; Enter plays/pauses;
+    // Escape is left to the player (close a menu, else leave the player).
     useEffect(() => {
         if (!enabled) return;
 
@@ -339,9 +346,6 @@ const GamepadProvider = ({ enabled, onGuide, children }: GamepadProviderProps) =
                 } else if (event.key === 'Enter') {
                     consume(event);
                     emit(control ? 'buttonA' : 'buttonX');
-                } else if (event.key === 'Escape' && control && !menuOpen()) {
-                    consume(event);
-                    control.blur();
                 }
                 // Otherwise Stremio's player shortcuts apply: left/right seek, Space, Escape exits.
                 return;
