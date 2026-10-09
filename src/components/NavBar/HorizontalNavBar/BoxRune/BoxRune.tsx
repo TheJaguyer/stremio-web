@@ -1,6 +1,6 @@
 // Saga: each box shows its own Elder Futhark rune (set per box in /etc/weebio/box.env or by hostname,
-// served by weebio-agent), so a friend can say which box they have. Drawn as SVG strokes because the
-// box may not have a font with runic letters.
+// served by weebio-agent), so a friend can say which box they have; the name is in Settings > About.
+// Drawn as SVG strokes because the box may not have a font with runic letters.
 
 import React, { useEffect, useState } from 'react';
 import styles from './BoxRune.less';
@@ -58,7 +58,6 @@ const BoxRune = () => {
             <svg className={styles['glyph']} viewBox={'0 0 60 100'}>
                 <path d={RUNES[box.rune]} />
             </svg>
-            <div className={styles['name']}>{name}</div>
         </div>
     );
 };

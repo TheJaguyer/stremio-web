@@ -60,6 +60,7 @@ translations['en-US'].translation = {
     SAGA_WIFI_CHANGE: 'Change network',
     SAGA_WIFI_NOT_CONNECTED: 'Not connected',
     SAGA_ABOUT: `About ${brand.name}`,
+    SAGA_BOX_ID: 'Box ID',
     SAGA_VERSION: 'Version',
     SAGA_BUILD: 'Build',
     SAGA_SOURCE: 'Source code',

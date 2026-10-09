@@ -17,12 +17,18 @@ const brand: Brand = JSON.parse(process.env.BRAND ?? '{}');
 const About = forwardRef<HTMLDivElement>((_, ref) => {
     const { t } = useTranslation();
     const [version, setVersion] = useState<string | null>(null);
+    const [boxId, setBoxId] = useState<string | null>(null);
 
     useEffect(() => {
         fetch('/weebio/api/version')
             .then((response) => response.json())
             .then((body) => setVersion(body.version || null))
             .catch(() => setVersion(null));
+        // The box's rune name (also its hostname), so a friend can read it out for troubleshooting.
+        fetch('/weebio/api/box')
+            .then((response) => response.json())
+            .then((body) => setBoxId(body.rune || body.hostname || null))
+            .catch(() => setBoxId(null));
     }, []);
 
     return (
@@ -32,6 +38,7 @@ const About = forwardRef<HTMLDivElement>((_, ref) => {
                 <div className={styles['tagline']}>{brand.tagline}</div>
                 <div className={styles['credits']}>{brand.credits}</div>
                 <div className={styles['details']}>
+                    {boxId && <div>{t('SAGA_BOX_ID')}: {boxId}</div>}
                     <div>{t('SAGA_VERSION')}: {version ?? process.env.VERSION}</div>
                     <div title={process.env.COMMIT_HASH}>{t('SAGA_BUILD')}: {process.env.COMMIT_HASH?.slice(0, 7)}</div>
                     <div>{t('SAGA_SOURCE')}: {brand.sourceUrl?.replace(/^https?:\/\//, '')}</div>

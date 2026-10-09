@@ -39,7 +39,8 @@ const ThemePicker = () => {
     const [selected, setSelected] = useState(storedTheme);
 
     useEffect(() => {
-        fetch('/weebio/themes/themes.json')
+        // Bypass WebKit's cache: the list changes when a release adds themes.
+        fetch('/weebio/themes/themes.json', { cache: 'no-store' })
             .then((response) => response.json())
             .then(setThemes)
             .catch(() => setThemes([]));
