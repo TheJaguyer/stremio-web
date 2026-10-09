@@ -44,12 +44,22 @@
         }
     }
 
+    // Fixed height whether or not there are suggestions. Picks keep their full width and the strip
+    // scrolls sideways (no scrollbar) as focus moves along it, so long titles stay readable.
     .quick-picks {
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        overflow: hidden;
-        padding: 0.25rem;
+        height: 3rem;
+        flex: none;
+        padding: 0 0.25rem;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
 
         .quick-picks-label {
             flex: none;
@@ -58,20 +68,21 @@
         }
 
         .quick-pick {
-            flex: 0 1 auto;
-            min-width: 0;
-            max-width: 16rem;
-            padding: 0.5rem 1rem;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            flex: none;
+            justify-content: flex-start;
+            height: 2.5rem;
+            padding: 0 1.25rem;
+            font-size: 1rem;
             white-space: nowrap;
+            text-align: left;
             border-radius: 2rem;
-            background-color: var(--overlay-color);
         }
     }
 
+    // Every row is the same 10-column grid, so keys line up vertically.
     .row {
-        display: flex;
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
         gap: 0.5rem;
     }
 
@@ -80,6 +91,7 @@
         align-items: center;
         justify-content: center;
         height: 3.25rem;
+        min-width: 0;
         border-radius: var(--border-radius);
         background-color: var(--overlay-color);
         font-size: 1.3rem;
@@ -93,28 +105,18 @@
         }
     }
 
-    .quick-pick {
-        height: 2.5rem;
-        font-size: 1rem;
-    }
-
-    .key {
-        flex: 1;
-    }
-
-    .wide-key {
-        flex: 1.5;
+    // Bottom row: ⌫ (1) + Space (3) + Clear (2) + Close (2) + Search (2) = 10 columns.
+    .wide-key, .search-key {
+        grid-column: span 2;
         font-size: 1.1rem;
     }
 
     .space-key {
-        flex: 3;
+        grid-column: span 3;
         font-size: 1.1rem;
     }
 
     .search-key {
-        flex: 2;
-        font-size: 1.1rem;
         background-color: var(--primary-accent-color);
         color: var(--secondary-foreground-color);
     }

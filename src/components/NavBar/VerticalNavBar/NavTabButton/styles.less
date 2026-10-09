@@ -34,7 +34,7 @@
     }
 
     &:global(.selected) {
-        .icon {
+        .icon, .label {
             opacity: 1;
         }
 
@@ -66,7 +66,13 @@
         text-align: center;
         white-space: nowrap;
         text-overflow: ellipsis;
-        opacity: 0;
+        overflow: hidden;
+        // Saga: labels always shown (upstream reveals them only on mouse hover), brighter when focused.
+        opacity: 0.6;
+    }
+
+    &:focus .label {
+        opacity: 1;
     }
 }
 

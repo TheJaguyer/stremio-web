@@ -13,7 +13,8 @@ import Button from 'stremio/components/Button';
 import { useGamepad } from 'stremio/services/GamepadContext';
 import styles from './SearchKeyboard.less';
 
-const ROWS = ['abcdefghij', 'klmnopqrst', 'uvwxyz-\'&.', '1234567890'];
+// QWERTY, 10 keys per row so every row lines up in columns (D-pad up/down stays in the same column).
+const ROWS = ['1234567890', 'qwertyuiop', 'asdfghjkl\'', 'zxcvbnm&.-'];
 const GAMEPAD_ID = 'saga-search-keyboard';
 const MAX_LENGTH = 80;
 
@@ -92,7 +93,7 @@ const SearchKeyboard = ({ query, history, suggestions, onChange, onSubmit, onClo
         };
     }, [gamepad, type, erase]);
 
-    const quickPicks = (query.length > 0 ? suggestions : history).slice(0, 6);
+    const quickPicks = (query.length > 0 ? suggestions : history).slice(0, 5);
 
     return (
         <Modal className={styles['search-keyboard-modal']}>
@@ -100,23 +101,24 @@ const SearchKeyboard = ({ query, history, suggestions, onChange, onSubmit, onClo
                 <div className={styles['query']}>
                     {query}<span className={styles['caret']} />
                 </div>
-                {
-                    quickPicks.length > 0 ?
-                        <div className={styles['quick-picks']}>
+                {/* Always rendered at a fixed height, so the keys don't jump as suggestions come and go. */}
+                <div className={styles['quick-picks']}>
+                    {
+                        quickPicks.length > 0 ?
                             <div className={styles['quick-picks-label']}>
                                 {query.length > 0 ? t('SEARCH_SUGGESTIONS') : t('STREMIO_TV_SEARCH_HISTORY_TITLE')}
                             </div>
-                            {
-                                quickPicks.map((item, index) => (
-                                    <Button key={index} className={styles['quick-pick']} title={item.query} onClick={() => latest.current.onSubmit(item.query)}>
-                                        {item.query}
-                                    </Button>
-                                ))
-                            }
-                        </div>
-                        :
-                        null
-                }
+                            :
+                            null
+                    }
+                    {
+                        quickPicks.map((item, index) => (
+                            <Button key={index} className={styles['quick-pick']} title={item.query} onClick={() => latest.current.onSubmit(item.query)}>
+                                {item.query}
+                            </Button>
+                        ))
+                    }
+                </div>
                 {
                     ROWS.map((row) => (
                         <div key={row} className={styles['row']}>
@@ -131,7 +133,7 @@ const SearchKeyboard = ({ query, history, suggestions, onChange, onSubmit, onClo
                     ))
                 }
                 <div className={styles['row']}>
-                    <Button className={styles['wide-key']} title={t('SAGA_KB_DELETE')} onClick={erase}>⌫</Button>
+                    <Button className={styles['key']} title={t('SAGA_KB_DELETE')} onClick={erase}>⌫</Button>
                     <Button className={styles['space-key']} title={t('SAGA_KB_SPACE')} onClick={() => type(' ')}>{t('SAGA_KB_SPACE')}</Button>
                     <Button className={styles['wide-key']} title={t('SAGA_KB_CLEAR')} onClick={() => latest.current.onChange('')}>{t('SAGA_KB_CLEAR')}</Button>
                     <Button className={styles['wide-key']} title={t('SAGA_KB_CLOSE')} onClick={() => latest.current.onClose()}>{t('SAGA_KB_CLOSE')}</Button>

@@ -52,6 +52,15 @@ const useContentGamepadNavigation = (
                 return;
             }
 
+            // Saga: Left from the search bar goes to the first side tab (Home), not whatever happens to be nearest.
+            if (direction === 'left' && activeElement.matches('[class*="search-bar-container"]')) {
+                const homeTab = scope?.querySelector<HTMLElement>('[class*="nav-tab-button-container"]');
+                if (homeTab) {
+                    homeTab.focus();
+                    return;
+                }
+            }
+
             let closestElement: HTMLDivElement | null = null;
             const cur = activeElement.getBoundingClientRect();
             const cx = cur.left + cur.width / 2;

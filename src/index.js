@@ -56,6 +56,8 @@ translations['en-US'].translation = {
     ...translations['en-US'].translation,
     // Pasting links isn't practical on a TV box, so search is just search.
     SEARCH_OR_PASTE_LINK: 'Search',
+    // The first side tab ("Board" upstream).
+    Board: 'Home',
     SAGA_KB_DELETE: 'Delete',
     SAGA_KB_SPACE: 'Space',
     SAGA_KB_CLEAR: 'Clear',
