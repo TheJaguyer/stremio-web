@@ -3,7 +3,8 @@
 import { useEffect } from 'react';
 import { useGamepad } from '../GamepadContext';
 
-const ROUTES = ['search', 'board', 'discover', 'library', 'calendar', 'addons', 'settings'];
+// Saga: index N presses digit N, which App.js maps to NAVIGATE_TABS_ROUTES[N - 1]; the lists must match.
+const ROUTES = ['search', 'board', 'discover', 'library', 'settings'];
 
 const useVerticalGamepadNavigation = (_sectionRef: React.RefObject<HTMLDivElement>, currentRoute: string) => {
     const gamepad = useGamepad();

@@ -1,6 +1,7 @@
 // Copyright (C) 2017-2023 Smart code 203358507
 
 const React = require('react');
+const { default: SagaEmpty } = require('stremio/components/SagaEmpty');
 const { useTranslation } = require('react-i18next');
 const { useParams } = require('react-router');
 const { useSearchParams } = require('react-router-dom');
@@ -13,7 +14,7 @@ const screenSizes = require('stremio/common/screen-sizes.less');
 const { default: getMetaDetailsHref } = require('stremio/common/getMetaDetailsHref');
 const { useRouteActive } = require('stremio/common/useRouteFocused');
 const { useNavigateWithOrigin } = require('stremio-router');
-const { AddonDetailsModal, Button, DelayedRenderer, Image, MainNavBars, MetaItem, MetaPreview, ModalDialog, MultiselectMenu } = require('stremio/components');
+const { AddonDetailsModal, Button, DelayedRenderer, MainNavBars, MetaItem, MetaPreview, ModalDialog, MultiselectMenu } = require('stremio/components');
 const { default: MetaPreviewSheet } = require('stremio/components/MetaPreviewSheet');
 const { default: EpgProgramModal } = require('stremio/components/EpgProgramModal');
 const useDiscover = require('./useDiscover');
@@ -194,7 +195,7 @@ const Discover = () => {
     const renderEmptyState = () => (
         <DelayedRenderer delay={500}>
             <div className={styles['message-container']}>
-                <Image className={styles['image']} src={require('/assets/images/empty.png')} alt={' '} />
+                <SagaEmpty className={styles['image']} />
                 <div className={styles['message-label']}>{t('NO_CATALOG_SELECTED')}</div>
             </div>
         </DelayedRenderer>
@@ -202,7 +203,7 @@ const Discover = () => {
 
     const renderErrorState = (msg) => (
         <div className={styles['message-container']}>
-            <Image className={styles['image']} src={require('/assets/images/empty.png')} alt={' '} />
+            <SagaEmpty className={styles['image']} />
             <div className={styles['message-label']}>{msg}</div>
         </div>
     );

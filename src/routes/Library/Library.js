@@ -1,6 +1,7 @@
 // Copyright (C) 2017-2023 Smart code 203358507
 
 const React = require('react');
+const { default: SagaEmpty } = require('stremio/components/SagaEmpty');
 const { useTranslation } = require('react-i18next');
 const { useLocation, useParams, useNavigate } = require('react-router');
 const { useSearchParams } = require('react-router-dom');
@@ -9,7 +10,7 @@ const classnames = require('classnames');
 const NotFound = require('stremio/routes/NotFound');
 const { useProfile, useNotifications, useOnScrollToBottom, withCoreSuspender } = require('stremio/common');
 const { default: toPath } = require('stremio-router/toPath');
-const { DelayedRenderer, Chips, Image, MainNavBars, LibItem, MultiselectMenu } = require('stremio/components');
+const { DelayedRenderer, Chips, MainNavBars, LibItem, MultiselectMenu } = require('stremio/components');
 const useLibrary = require('./useLibrary');
 const useSelectableInputs = require('./useSelectableInputs');
 const styles = require('./styles');
@@ -80,22 +81,14 @@ const Library = ({ model }) => {
                     library.selected === null ?
                         <DelayedRenderer delay={500}>
                             <div className={styles['message-container']}>
-                                <Image
-                                    className={styles['image']}
-                                    src={require('/assets/images/empty.png')}
-                                    alt={' '}
-                                />
+                                <SagaEmpty className={styles['image']} />
                                 <div className={styles['message-label']}>{model === 'library' ? t('LIBRARY_NOT_LOADED') : t('BOARD_CONTINUE_WATCHING_NOT_LOADED')}</div>
                             </div>
                         </DelayedRenderer>
                         :
                         library.catalog.length === 0 ?
                             <div className={styles['message-container']}>
-                                <Image
-                                    className={styles['image']}
-                                    src={require('/assets/images/empty.png')}
-                                    alt={' '}
-                                />
+                                <SagaEmpty className={styles['image']} />
                                 <div className={styles['message-label']}>{model === 'library' ? t('LIBRARY_EMPTY') : t('BOARD_CONTINUE_WATCHING_EMPTY')}</div>
                             </div>
                             :

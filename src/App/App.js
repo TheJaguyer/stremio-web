@@ -20,7 +20,8 @@ const { default: useInterfaceScale } = require('./useInterfaceScale');
 const styles = require('./styles');
 
 const ProtectedRoutes = withCoreSuspender(Routes);
-const NAVIGATE_TABS_ROUTES = ['/', '/discover', '/library', '/calendar', '/settings'];
+// Saga: number keys 1-4 (and gamepad LT/RT) open these tabs; keep in step with GamepadNavigation's ROUTES.
+const NAVIGATE_TABS_ROUTES = ['/', '/discover', '/library', '/settings'];
 
 const App = () => {
     const core = useCore();

@@ -1,12 +1,13 @@
 // Copyright (C) 2017-2023 Smart code 203358507
 
 const React = require('react');
+const { default: SagaEmpty } = require('stremio/components/SagaEmpty');
 const PropTypes = require('prop-types');
 const classnames = require('classnames');
 const { t } = require('i18next');
 const { useCore } = require('stremio/core');
 const { useProfile } = require('stremio/common');
-const { Image, SearchBar, Toggle, Video } = require('stremio/components');
+const { SearchBar, Toggle, Video } = require('stremio/components');
 const SeasonsBar = require('./SeasonsBar');
 const { default: EpisodePicker } = require('../EpisodePicker');
 const styles = require('./styles');
@@ -159,7 +160,7 @@ const VideosList = ({ className, metaItem, libraryItem, season, seasonOnSelect, 
                     metaItem.content.type === 'Err' || videosForSeason.length === 0 ?
                         <div className={styles['message-container']}>
                             <EpisodePicker className={styles['episode-picker']} onSubmit={onSeasonSearch} />
-                            <Image className={styles['image']} src={require('/assets/images/empty.png')} alt={' '} />
+                            <SagaEmpty className={styles['image']} />
                             <div className={styles['label']}>{t('ERR_NO_VIDEOS_FOR_META')}</div>
                         </div>
                         :

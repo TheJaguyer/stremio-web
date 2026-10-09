@@ -1,6 +1,7 @@
 // Copyright (C) 2017-2023 Smart code 203358507
 
 const React = require('react');
+const { default: SagaEmpty } = require('stremio/components/SagaEmpty');
 const { useNavigate } = require('react-router');
 const { default: toPath } = require('stremio-router/toPath');
 const { useGoBack } = require('stremio-router');
@@ -8,7 +9,7 @@ const PropTypes = require('prop-types');
 const classnames = require('classnames');
 const { useTranslation } = require('react-i18next');
 const { default: Icon } = require('@stremio/stremio-icons/react');
-const { Button, Image, MultiselectMenu } = require('stremio/components');
+const { Button, MultiselectMenu } = require('stremio/components');
 const { useCore } = require('stremio/core');
 const Stream = require('./Stream');
 const styles = require('./styles');
@@ -144,7 +145,7 @@ const StreamsList = ({ className, video, type, externalPlayerCallbackCanMarkWatc
                                 <SeasonEpisodePicker className={styles['search']} onSubmit={handleEpisodePicker} />
                                 : null
                         }
-                        <Image className={styles['image']} src={require('/assets/images/empty.png')} alt={' '} />
+                        <SagaEmpty className={styles['image']} />
                         <div className={styles['label']}>{t('ERR_NO_ADDONS_FOR_STREAMS')}</div>
                     </div>
                     :
@@ -160,7 +161,7 @@ const StreamsList = ({ className, video, type, externalPlayerCallbackCanMarkWatc
                                     <div className={styles['label']}>{t('UPCOMING')}...</div>
                                     : null
                             }
-                            <Image className={styles['image']} src={require('/assets/images/empty.png')} alt={' '} />
+                            <SagaEmpty className={styles['image']} />
                             <div className={styles['label']}>{t('NO_STREAM')}</div>
                             {
                                 showInstallAddonsButton ?

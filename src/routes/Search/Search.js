@@ -1,12 +1,13 @@
 // Copyright (C) 2017-2023 Smart code 203358507
 
 const React = require('react');
+const { default: SagaEmpty } = require('stremio/components/SagaEmpty');
 const classnames = require('classnames');
 const useTranslate = require('stremio/common/useTranslate');
 const { default: useVisibleCatalogs } = require('stremio/common/useVisibleCatalogs');
 const { default: Icon } = require('@stremio/stremio-icons/react');
 const { withCoreSuspender } = require('stremio/common');
-const { Image, MainNavBars, MetaItem, MetaRow } = require('stremio/components');
+const { MainNavBars, MetaItem, MetaRow } = require('stremio/components');
 const useSearch = require('./useSearch');
 const styles = require('./styles');
 const { useSearchParams } = require('react-router-dom');
@@ -62,11 +63,7 @@ const Search = () => {
                         :
                         search.catalogs.length === 0 ?
                             <div className={styles['message-container']}>
-                                <Image
-                                    className={styles['image']}
-                                    src={require('/assets/images/empty.png')}
-                                    alt={' '}
-                                />
+                                <SagaEmpty className={styles['image']} />
                                 <div className={styles['message-label']}>{ t.string('STREMIO_TV_SEARCH_NO_ADDONS') }</div>
                             </div>
                             :
