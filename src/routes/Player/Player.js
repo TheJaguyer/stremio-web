@@ -522,8 +522,8 @@ const Player = () => {
 
     // Saga: with no control focused, Up reveals the controls on the back button and Down on play/pause.
     const gamepadEntry = React.useCallback((direction) => {
-        if (direction === 'up') return playerRef.current?.querySelector('[class*="nav-bar-layer"] [class*="back-button-container"]') ?? null;
-        if (direction === 'down') return controlBarRef.current?.querySelector('[class*="control-bar-button"]') ?? null;
+        if (direction === 'up') return playerRef.current?.querySelector('[class*="nav-bar-layer"] [class*="back-button-container"][tabindex]') ?? null;
+        if (direction === 'down') return controlBarRef.current?.querySelector('[class*="control-bar-button"][tabindex]') ?? null;
         return null;
     }, []);
     useContentGamepadNavigation(playerRef, GAMEPAD_HANDLER_ID, { entry: gamepadEntry });

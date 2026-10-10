@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useGamepad } from '../GamepadContext';
 
 const FOCUSABLE = '[tabindex]:not([data-focus-guard])';
+const SEE_ALL = '[class*="see-all-container"]'; // a poster row's "See all" button
 
 type Direction = 'left' | 'right' | 'up' | 'down';
 
@@ -39,7 +40,8 @@ const focusablesIn = (root: Element | null | undefined) =>
 
 // Saga: the nearest candidate in a direction. Candidates in line with the current element (same row for
 // left/right, same column for up/down) come first, so moves stay straight instead of cutting diagonally.
-const nearest = (from: HTMLElement, direction: Direction, candidates: HTMLElement[]): HTMLElement | null => {
+// With `strict`, left/right only ever stay in the same row (no diagonal fallback).
+const nearest = (from: HTMLElement, direction: Direction, candidates: HTMLElement[], strict = false): HTMLElement | null => {
     const cur = from.getBoundingClientRect();
     const cx = cur.left + cur.width / 2;
     const cy = cur.top + cur.height / 2;
@@ -64,7 +66,8 @@ const nearest = (from: HTMLElement, direction: Direction, candidates: HTMLElemen
 
     let best: HTMLElement | null = null;
     let bestDistance = Infinity;
-    for (const el of inLine.length > 0 ? inLine : ahead) {
+    const pool = inLine.length > 0 || (strict && horizontal) ? inLine : ahead;
+    for (const el of pool) {
         const r = el.getBoundingClientRect();
         const dx = Math.abs(r.left + r.width / 2 - cx);
         const dy = Math.abs(r.top + r.height / 2 - cy);
@@ -95,8 +98,35 @@ const focusAndReveal = (element: HTMLElement) => {
     const top = element.getBoundingClientRect().top;
     const rowTolerance = element.getBoundingClientRect().height / 2;
     const above = focusablesIn(scroller)
-        .some((other) => other !== element && other.getBoundingClientRect().top < top - rowTolerance);
+        // (a row's "See all" sits above its posters but counts as part of that row)
+        .some((other) => other !== element && !other.matches(SEE_ALL) && other.getBoundingClientRect().top < top - rowTolerance);
     if (!above) scroller.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+// Saga: poster rows (Board, Search). A row's "See all" button logically sits at the row's right end: Right
+// from the last poster reaches it, and Up/Down between posters skip it.
+const ROW = '[class*="meta-row-container"]';
+
+const navigateRow = (active: HTMLElement, direction: Direction, content: HTMLElement): HTMLElement | null | undefined => {
+    const all = focusablesIn(content);
+    const seeAlls = all.filter((el) => el.matches(SEE_ALL));
+    const items = all.filter((el) => !el.matches(SEE_ALL));
+    const row = active.closest<HTMLElement>(ROW);
+
+    if (active.matches(SEE_ALL)) {
+        if (direction === 'left') {
+            const posters = items.filter((el) => row?.contains(el));
+            return posters.reduce<HTMLElement | null>((last, el) =>
+                !last || el.getBoundingClientRect().left > last.getBoundingClientRect().left ? el : last, null);
+        }
+        if (direction === 'right') return null;
+        return nearest(active, direction, seeAlls) ?? nearest(active, direction, items);
+    }
+
+    if (!row) return undefined; // not in a poster row: the generic rules apply
+    const target = nearest(active, direction, items, true);
+    if (target || direction !== 'right') return target;
+    return row.querySelector<HTMLElement>(SEE_ALL) ?? null;
 };
 
 // Saga: the main screens' three areas.
@@ -197,7 +227,8 @@ const useContentGamepadNavigation = (
             }
 
             if (active && content.contains(active)) {
-                const target = nearest(active, direction, focusablesIn(content));
+                const rowTarget = navigateRow(active, direction, content);
+                const target = rowTarget === undefined ? nearest(active, direction, focusablesIn(content)) : rowTarget;
                 if (target) {
                     focusAndReveal(target);
                 } else if (direction === 'left') {
